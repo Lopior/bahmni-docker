@@ -274,6 +274,9 @@ services:
       MYSQL_DATABASE: ${OPENMRS_DB_NAME:?}
       MYSQL_USER: ${OPENMRS_DB_USERNAME:?}
       MYSQL_PASSWORD: ${OPENMRS_DB_PASSWORD:?}
+      NOTIFICACIONES_DATABASE: ${NOTIFICACIONES_DATABASE:?}
+      MYSQL_USER_NOTIFICACIONES: ${MYSQL_USER_NOTIFICACIONES:?}
+      MYSQL_PASSWORD_NOTIFICACIONES: ${MYSQL_PASSWORD_NOTIFICACIONES:?}
     volumes:
       - 'openmrsdbdata:/var/lib/mysql'
       - 'configuration_checksums:/configuration_checksums'
@@ -603,9 +606,69 @@ services:
     volumes:
       - '../snomed-resources/load-snowstorm-data.sh:/load-snowstorm-data.sh'
     #  - "${SNOWSTORM_RF2_FILE_PATH:?}:/snowstorm-data/snomed-data.zip:ro"
-
+  gesfrontend:
+      image: 'juanjortega/bahmni_gn_frontend:latest'
+      profiles: ["emr","bahmni-standard", "metabase", "bahmni-mart"]
+      hostname: gesfrontend  
+      ports:
+        - "8092:8092"
+      restart: "always"
+  
+        
+    gesbackend:
+      image: 'juanjortega/bahmni_gn_backend:latest'
+      profiles: ["emr","bahmni-standard", "metabase", "bahmni-mart"]
+      hostname: gesbackend  
+      ports:
+        - "8093:8093"
+      environment:
+        OPENMMRS_MYSQL_HOST: ${OPENMMRS_MYSQL_HOST:?}
+        MYSQL_OPENMRS_DATABASE: ${MYSQL_OPENMRS_DATABASE:?} 
+        MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?}
+        MYSQL_OPENMRS_USER: ${MYSQL_OPENMRS_USER:?}
+        MYSQL_OPENMRS_PASSWORD: ${MYSQL_OPENMRS_PASSWORD:?}
+        NOTIFICACIONES_HOST: ${NOTIFICACIONES_HOST:?}
+        NOTIFICACIONES_DATABASE: ${NOTIFICACIONES_DATABASE:?}
+        MYSQL_USER_NOTIFICACIONES: ${MYSQL_USER_NOTIFICACIONES:?}
+        MYSQL_PASSWORD_NOTIFICACIONES: ${MYSQL_PASSWORD_NOTIFICACIONES:?}
+      restart: "always"
+      
+    apidaemon:
+      image: 'juanjortega/bahmni_notificacionges:latest'
+      profiles: ["emr","bahmni-standard", "metabase", "bahmni-mart"]
+      environment:
+        OPENMMRS_MYSQL_HOST: ${OPENMMRS_MYSQL_HOST:?}
+        MYSQL_OPENMRS_DATABASE: ${MYSQL_OPENMRS_DATABASE:?} 
+        MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?}
+        MYSQL_OPENMRS_USER: ${MYSQL_OPENMRS_USER:?}
+        MYSQL_OPENMRS_PASSWORD: ${MYSQL_OPENMRS_PASSWORD:?}
+        NOTIFICACIONES_HOST: ${NOTIFICACIONES_HOST:?}
+        NOTIFICACIONES_DATABASE: ${NOTIFICACIONES_DATABASE:?}
+        MYSQL_USER_NOTIFICACIONES: ${MYSQL_USER_NOTIFICACIONES:?}
+        MYSQL_PASSWORD_NOTIFICACIONES: ${MYSQL_PASSWORD_NOTIFICACIONES:?}
+        INTERVALO_SEG: ${INTERVALO_SEG:?}
+        CONCEPT_UUID_VAR: ${CONCEPT_UUID_VAR:?}
+        CONCEPT_NAME_VAR: ${CONCEPT_NAME_VAR:?}
+      restart: "always"
+  
+    #notificacionesdb:
+     # image: ${OPENMRS_DB_IMAGE_NAME:?}
+      #container_name: notificacionesdb
+      #restart: always
+      #profiles: ["emr","bahmni-standard", "metabase", "bahmni-mart"]
+      #environment:
+       # MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?}
+        #NOTIFICACIONES_DATABASE: ${NOTIFICACIONES_DATABASE:?}
+        #MYSQL_USER_NOTIFICACIONES: ${MYSQL_USER_NOTIFICACIONES:?}
+        #MYSQL_PASSWORD_NOTIFICACIONES: ${MYSQL_PASSWORD_NOTIFICACIONES:?}
+      #volumes:
+       # - 'notificacionesdbdata:/var/lib/mysql'
+       # - './initdb.notificacion:/docker-entrypoint-initdb.d'
+      #ports:
+       # - "3308:3306"
 
 volumes:
+  #notificacionesdbdata:
   openelisdbdata:
   odoodbdata:
   odooappdata:
